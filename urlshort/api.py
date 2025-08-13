@@ -2,7 +2,7 @@ from __future__ import annotations
 import sqlite3, secrets, logging
 from typing import Optional
 from urllib.parse import urlparse
-from flask import Blueprint, request, jsonify, current_app, abort, make_response
+from flask import Blueprint, request, jsonify, current_app, url_for, abort, make_response
 from .db import get_db
 from .security import check_rate_limit
 from . import analytics as an
@@ -39,7 +39,6 @@ def api_create_link():
     unauth = _auth_or_401()
     if unauth is not None:
         return unauth
-
     check_rate_limit(scope="api-create")
 
     if not request.is_json:
@@ -90,22 +89,18 @@ def api_create_link():
 
     short_url = f"{current_app.config.get('BASE_URL', '').rstrip('/')}/{slug}"
     log.info("api.create slug=%s is_perm=%s target=%s", slug, is_permanent, target_url)
-
-    resp = jsonify({
+    return jsonify({
         "slug": slug,
         "short_url": short_url,
         "target_url": target_url,
         "is_permanent": bool(is_permanent)
-    })
-    return resp, 201, {"Location": short_url}
+    }), 201, {"Location": short_url}
 
 @bp.get("/links/<slug>")
 def api_get_link(slug: str):
-
     unauth = _auth_or_401()
     if unauth is not None:
         return unauth
-
     check_rate_limit(scope="api-get")
 
     db = get_db()
@@ -116,7 +111,6 @@ def api_get_link(slug: str):
     start = request.args.get("start")
     end = request.args.get("end")
     aggregate = request.args.get("aggregate")
-
 
     if aggregate == "day":
         per_day = an.clicks_per_day(db, link_id=link["id"], start=start, end=end)
