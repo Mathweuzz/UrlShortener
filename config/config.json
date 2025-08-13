@@ -9,7 +9,8 @@
     "RATE_LIMIT_WINDOW": 60,
     "MAX_FORM_BYTES": 4096,
     "LOG_LEVEL": "INFO",
-    "DEBUG": true
+    "DEBUG": true,
+    "API_TOKEN": "123"
   },
   "logging": {
     "version": 1,

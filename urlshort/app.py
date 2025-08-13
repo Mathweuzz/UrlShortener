@@ -70,8 +70,10 @@ def create_app(config_overrides: dict | None = None) -> Flask:
 
     from .public import bp as public_bp
     from .admin import bp as admin_bp
+    from .api import bp as api_bp    
     app.register_blueprint(public_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(api_bp, url_prefix="/api")
 
     from . import db as db_ext
     db_ext.init_app(app)
