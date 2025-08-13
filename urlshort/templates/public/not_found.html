@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Não encontrado — URL Shortener{% endblock %}
+{% block content %}
+  <h2>Slug não encontrado</h2>
+  <p>O recurso <code>{{ slug }}</code> não existe ou foi removido.</p>
+  <p><a href="{{ url_for('public.index') }}">Voltar</a></p>
+{% endblock %}

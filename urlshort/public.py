@@ -10,6 +10,7 @@ bp = Blueprint("public", __name__)
 ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 def base62_slug(n: int = 6) -> str:
+    # Usa fonte criptográfica para evitar previsibilidade simples
     return "".join(secrets.choice(ALPHABET) for _ in range(n))
 
 def get_client_ip() -> str | None:
@@ -26,6 +27,7 @@ def is_valid_http_url(u: str) -> bool:
     return p.scheme in ("http", "https") and bool(p.netloc)
 
 def is_loop_to_base(u: str, base: str) -> bool:
+    # Bloqueia encurtar qualquer URL que aponte para o próprio domínio base
     try:
         pu, pb = urlparse(u), urlparse(base)
         if not pb.netloc:
@@ -46,7 +48,6 @@ def index():
         # Validações
         if not is_valid_http_url(target_url):
             flash("URL inválida: use http(s) e até 2048 caracteres.", "error")
-            # Re-render com 400 em caso de erro de validação
             links = db.execute(
                 "SELECT id, slug, target_url, is_permanent, created_at FROM links ORDER BY created_at DESC LIMIT 20"
             ).fetchall()
@@ -61,6 +62,7 @@ def index():
 
         created_ip = get_client_ip()
 
+        # Geração de slug com checagem de colisão via UNIQUE
         slug_len = int(current_app.config.get("SLUG_LEN", 6))
         max_tries = 10
         slug = None
@@ -86,11 +88,50 @@ def index():
 
         short_url = f"{base_url.rstrip('/')}/{slug}"
         flash(f"Link criado: {short_url}", "success")
-        # PRG 
         return redirect(url_for("public.index"))
 
-    # get lista recentes
+    # GET: lista recentes
     links = db.execute(
         "SELECT id, slug, target_url, is_permanent, created_at FROM links ORDER BY created_at DESC LIMIT 20"
     ).fetchall()
     return render_template("public/index.html", base_url=base_url, links=links)
+
+@bp.get("/<slug>")
+def follow(slug: str):
+    """
+    Resolve o slug, registra o clique e redireciona (301/302).
+    """
+    db = get_db()
+    row = db.execute(
+        "SELECT id, target_url, is_permanent FROM links WHERE slug = ?",
+        (slug,),
+    ).fetchone()
+
+    if not row:
+        # 404 amigável
+        return render_template("public/not_found.html", slug=slug), 404
+
+    # Registrar clique
+    ip = get_client_ip()
+    ua = request.headers.get("User-Agent")
+    ref = request.headers.get("Referer")  # (sic) nome do cabeçalho HTTP
+    db.execute(
+        "INSERT INTO clicks (link_id, ip, user_agent, referrer) VALUES (?,?,?,?)",
+        (row["id"], ip, ua, ref),
+    )
+    db.commit()
+
+    # Redirecionar com status apropriado
+    code = 301 if row["is_permanent"] else 302
+    resp = redirect(row["target_url"], code=code)
+
+    # Cabeçalhos de cache apropriados
+    if code == 301:
+        max_age = int(current_app.config.get("REDIRECT_CACHE", 3600))
+        resp.headers["Cache-Control"] = f"public, max-age={max_age}"
+    else:
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+
+    return resp

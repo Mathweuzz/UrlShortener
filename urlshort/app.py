@@ -13,6 +13,7 @@ def create_app(config_overrides: dict | None = None) -> Flask:
         BASE_URL="http://localhost:5000",
         DB_PATH="var/data.db",
         SLUG_LEN=6,
+        REDIRECT_CACHE=3600,
     )
     if config_overrides:
         app.config.update(config_overrides)
