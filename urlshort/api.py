@@ -2,7 +2,7 @@ from __future__ import annotations
 import sqlite3, secrets, logging
 from typing import Optional
 from urllib.parse import urlparse
-from flask import Blueprint, request, jsonify, current_app, url_for, abort, make_response
+from flask import Blueprint, request, jsonify, current_app, abort, make_response
 from .db import get_db
 from .security import check_rate_limit
 from . import analytics as an
