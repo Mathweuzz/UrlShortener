@@ -1,0 +1,43 @@
+{
+  "app": {
+    "BASE_URL": "http://localhost:5000",
+    "DB_PATH": "var/data.db",
+    "PAGE_SIZE": 20,
+    "SLUG_LEN": 6,
+    "REDIRECT_CACHE": 3600,
+    "RATE_LIMIT_MAX": 10,
+    "RATE_LIMIT_WINDOW": 60,
+    "MAX_FORM_BYTES": 4096,
+    "LOG_LEVEL": "INFO",
+    "DEBUG": true
+  },
+  "logging": {
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+      "simple": { "format": "%(asctime)s %(levelname)s %(name)s: %(message)s" },
+      "access": { "format": "%(asctime)s ACCESS %(message)s" }
+    },
+    "handlers": {
+      "console": {
+        "class": "logging.StreamHandler",
+        "level": "DEBUG",
+        "formatter": "simple",
+        "stream": "ext://sys.stdout"
+      },
+      "file": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "DEBUG",
+        "formatter": "simple",
+        "filename": "var/app.log",
+        "maxBytes": 1048576,
+        "backupCount": 3
+      }
+    },
+    "loggers": {
+      "app":     { "handlers": ["console", "file"], "level": "INFO", "propagate": false },
+      "access":  { "handlers": ["console", "file"], "level": "INFO", "propagate": false }
+    },
+    "root": { "handlers": ["console", "file"], "level": "WARNING" }
+  }
+}

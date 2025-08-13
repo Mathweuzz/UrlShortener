@@ -1,12 +1,12 @@
 from __future__ import annotations
-import sqlite3
-import secrets
+import sqlite3, secrets, logging
 from urllib.parse import urlparse
 from flask import Blueprint, render_template, current_app, request, redirect, url_for, flash
 from .db import get_db
-from .security import client_ip, check_rate_limit, require_csrf  # <—
+from .security import client_ip, check_rate_limit, require_csrf
 
 bp = Blueprint("public", __name__)
+log = logging.getLogger("app")
 
 ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -34,13 +34,12 @@ def index():
     base_url = current_app.config.get("BASE_URL", "http://localhost:5000")
 
     if request.method == "POST":
-        check_rate_limit(scope="create")  
+        check_rate_limit(scope="create")
         require_csrf()
 
         target_url = (request.form.get("target_url") or "").strip()
         is_perm = 1 if (request.form.get("is_permanent") == "1") else 0
 
-        # Validações
         if not is_valid_http_url(target_url):
             flash("URL inválida: use http(s) e até 2048 caracteres.", "error")
             links = db.execute(
@@ -56,10 +55,9 @@ def index():
             return render_template("public/index.html", base_url=base_url, links=links), 400
 
         created_ip = client_ip()
-
         slug_len = int(current_app.config.get("SLUG_LEN", 6))
-        max_tries = 10
-        slug = None
+        max_tries, slug = 10, None
+
         for _ in range(max_tries):
             candidate = base62_slug(slug_len)
             try:
@@ -69,6 +67,7 @@ def index():
                 )
                 db.commit()
                 slug = candidate
+                log.info("create slug=%s is_perm=%s ip=%s target=%s", slug, is_perm, created_ip, target_url)
                 break
             except sqlite3.IntegrityError:
                 continue
@@ -110,8 +109,9 @@ def follow(slug: str):
     db.commit()
 
     code = 301 if row["is_permanent"] else 302
-    resp = redirect(row["target_url"], code=code)
+    log.info("redirect slug=%s code=%s to=%s ip=%s", slug, code, row["target_url"], ip)
 
+    resp = redirect(row["target_url"], code=code)
     if code == 301:
         max_age = int(current_app.config.get("REDIRECT_CACHE", 3600))
         resp.headers["Cache-Control"] = f"public, max-age={max_age}"
@@ -119,5 +119,4 @@ def follow(slug: str):
         resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         resp.headers["Pragma"] = "no-cache"
         resp.headers["Expires"] = "0"
-
     return resp
