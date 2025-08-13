@@ -1,6 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Admin — URL Shortener{% endblock %}
+{% block title %}Admin — Links & Cliques{% endblock %}
 {% block content %}
-  <h2>Admin (placeholder)</h2>
-  <p>O painel com analytics aparecerá aqui.</p>
+  <h2>Links (totais de cliques)</h2>
+
+  <form method="get" class="card" style="margin-bottom:16px;">
+    <strong>Filtro por intervalo</strong><br>
+    <label>Início: <input type="date" name="start" value="{{ start or '' }}"></label>
+    <label style="margin-left:12px;">Fim: <input type="date" name="end" value="{{ end or '' }}"></label>
+    <button type="submit" style="margin-left:12px;">Aplicar</button>
+    <a href="{{ url_for('admin.admin_home') }}" style="margin-left:12px;">Limpar</a>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Slug</th>
+        <th>Destino</th>
+        <th>Tipo</th>
+        <th>Criado em</th>
+        <th>Cliques</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><a href="{{ url_for('admin.admin_detail', slug=r['slug']) }}"><code>{{ r['slug'] }}</code></a></td>
+        <td style="word-break:break-all;"><a href="{{ r['target_url'] }}" target="_blank" rel="noopener">{{ r['target_url'] }}</a></td>
+        <td>{{ "301" if r["is_permanent"] else "302" }}</td>
+        <td>{{ r["created_at"] }}</td>
+        <td>{{ r["clicks"] }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">Nenhum link encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

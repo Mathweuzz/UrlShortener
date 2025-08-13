@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Admin — {{ link["slug"] }}{% endblock %}
+{% block content %}
+  <h2>Detalhe do link</h2>
+
+  <p>
+    <strong>Curto:</strong>
+    <a href="{{ base_url.rstrip('/') }}/{{ link['slug'] }}" target="_blank" rel="noopener">
+      {{ base_url.rstrip('/') }}/{{ link['slug'] }}
+    </a><br>
+    <strong>Destino:</strong>
+    <a href="{{ link['target_url'] }}" target="_blank" rel="noopener">{{ link['target_url'] }}</a><br>
+    <strong>Tipo:</strong> {{ "301" if link["is_permanent"] else "302" }}<br>
+    <strong>Criado em:</strong> {{ link["created_at"] }}<br>
+    <strong>Total de cliques no intervalo:</strong> {{ total_clicks }}
+  </p>
+
+  <form method="get" class="card" style="margin-bottom:16px;">
+    <strong>Filtro de intervalo</strong><br>
+    <label>Início: <input type="date" name="start" value="{{ start or '' }}"></label>
+    <label style="margin-left:12px;">Fim: <input type="date" name="end" value="{{ end or '' }}"></label>
+    <button type="submit" style="margin-left:12px;">Aplicar</button>
+    <a href="{{ url_for('admin.admin_detail', slug=link['slug']) }}" style="margin-left:12px;">Últimos 30 dias</a>
+  </form>
+
+  <h3>Cliques por dia</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Dia</th>
+        <th>Cliques</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in per_day %}
+      <tr>
+        <td>{{ r["day"] }}</td>
+        <td>{{ r["clicks"] }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="2">Sem cliques no intervalo.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 style="margin-top:24px;">Cliques recentes</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>IP</th>
+        <th>User-Agent</th>
+        <th>Referrer</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in recent %}
+      <tr>
+        <td>{{ c["ts"] }}</td>
+        <td>{{ c["ip"] or "-" }}</td>
+        <td style="max-width:420px;word-break:break-all;">{{ c["user_agent"] or "-" }}</td>
+        <td style="max-width:320px;word-break:break-all;">{{ c["referrer"] or "-" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">Sem cliques no intervalo.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
