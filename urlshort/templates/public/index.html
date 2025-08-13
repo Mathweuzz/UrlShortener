@@ -1,7 +1,44 @@
 {% extends "base.html" %}
 {% block title %}URL Shortener — Público{% endblock %}
 {% block content %}
-  <h2>Página Pública</h2>
-  <p>Ambiente OK. Próximo passo: criar formulário para encurtar URLs (Passo 3).</p>
-  <p><strong>BASE_URL:</strong> {{ base_url }}</p>
+  <h2>Encurtar URL</h2>
+
+  <form method="post" action="{{ url_for('public.index') }}" class="card">
+    <label for="target_url"><strong>URL de destino</strong></label>
+    <input id="target_url" name="target_url" type="url" required placeholder="https://exemplo.com/pagina" maxlength="2048" style="width:100%;padding:8px;margin:6px 0;">
+
+    <fieldset style="border:0;margin:6px 0;padding:0;">
+      <legend style="font-weight:bold;">Tipo de redirecionamento</legend>
+      <label><input type="radio" name="is_permanent" value="1" checked> 301 (permanente)</label>
+      <label style="margin-left:16px;"><input type="radio" name="is_permanent" value="0"> 302 (temporário)</label>
+    </fieldset>
+
+    <button type="submit">Encurtar</button>
+  </form>
+
+  <h3 style="margin-top:24px;">Últimos links</h3>
+  {% if links %}
+    <table>
+      <thead>
+        <tr>
+          <th>Curto</th>
+          <th>Destino</th>
+          <th>Tipo</th>
+          <th>Criado em</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in links %}
+          <tr>
+            <td><a href="{{ base_url.rstrip('/') }}/{{ r['slug'] }}" target="_blank" rel="noopener">{{ base_url.rstrip('/') }}/{{ r['slug'] }}</a></td>
+            <td style="word-break:break-all;"><a href="{{ r['target_url'] }}" target="_blank" rel="noopener">{{ r['target_url'] }}</a></td>
+            <td>{{ "301" if r["is_permanent"] else "302" }}</td>
+            <td>{{ r["created_at"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nenhum link criado ainda.</p>
+  {% endif %}
 {% endblock %}

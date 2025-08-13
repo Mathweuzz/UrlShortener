@@ -12,6 +12,7 @@ def create_app(config_overrides: dict | None = None) -> Flask:
         PERMANENT_SESSION_LIFETIME=timedelta(days=7),
         BASE_URL="http://localhost:5000",
         DB_PATH="var/data.db",
+        SLUG_LEN=6,
     )
     if config_overrides:
         app.config.update(config_overrides)
