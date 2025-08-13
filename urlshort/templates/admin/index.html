@@ -4,8 +4,9 @@
   <h2>Links (totais de cliques)</h2>
 
   <form method="get" class="card" style="margin-bottom:16px;">
-    <strong>Filtro por intervalo</strong><br>
-    <label>Início: <input type="date" name="start" value="{{ start or '' }}"></label>
+    <strong>Filtros</strong><br>
+    <label>Busca: <input type="search" name="q" value="{{ q or '' }}" placeholder="slug ou destino"></label>
+    <label style="margin-left:12px;">Início: <input type="date" name="start" value="{{ start or '' }}"></label>
     <label style="margin-left:12px;">Fim: <input type="date" name="end" value="{{ end or '' }}"></label>
     <button type="submit" style="margin-left:12px;">Aplicar</button>
     <a href="{{ url_for('admin.admin_home') }}" style="margin-left:12px;">Limpar</a>
@@ -14,7 +15,7 @@
   <table>
     <thead>
       <tr>
-        <th>Slug</th>
+        <th>Curto</th>
         <th>Destino</th>
         <th>Tipo</th>
         <th>Criado em</th>
@@ -24,7 +25,14 @@
     <tbody>
       {% for r in rows %}
       <tr>
-        <td><a href="{{ url_for('admin.admin_detail', slug=r['slug']) }}"><code>{{ r['slug'] }}</code></a></td>
+        <td>
+          <a href="{{ url_for('admin.admin_detail', slug=r['slug']) }}"><code>{{ r['slug'] }}</code></a><br>
+          <div class="muted small">
+            <span class="mono">{{ request.host_url.rstrip('/') }}/{{ r['slug'] }}</span>
+            <button class="btn btn-sm copy-btn" type="button"
+                    data-copy="{{ request.host_url.rstrip('/') }}/{{ r['slug'] }}">Copiar</button>
+          </div>
+        </td>
         <td style="word-break:break-all;"><a href="{{ r['target_url'] }}" target="_blank" rel="noopener">{{ r['target_url'] }}</a></td>
         <td>{{ "301" if r["is_permanent"] else "302" }}</td>
         <td>{{ r["created_at"] }}</td>
@@ -35,4 +43,12 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <nav class="pagination">
+    <span>Página {{ page }} de {{ total_pages }}</span>
+    <div>
+      {% if has_prev %}<a class="btn btn-sm" href="{{ prev_url }}">&larr; Anterior</a>{% endif %}
+      {% if has_next %}<a class="btn btn-sm" href="{{ next_url }}">Próxima &rarr;</a>{% endif %}
+    </div>
+  </nav>
 {% endblock %}

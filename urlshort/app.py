@@ -1,26 +1,20 @@
 from flask import Flask
 from datetime import timedelta
 
-def create_app(config_overrides: dict | None = None) -> Flask:
-    app = Flask(
-        __name__,
-        static_folder="static",
-        template_folder="templates",
-    )
-
+def create_app(config_overrides: dict | None = None):
+    app = Flask(__name__, static_folder="static", template_folder="templates")
     app.config.update(
         SECRET_KEY="dev-secret-change-me",
         SESSION_COOKIE_HTTPONLY=True,
         PERMANENT_SESSION_LIFETIME=timedelta(days=7),
-
         BASE_URL="http://localhost:5000",
         DB_PATH="var/data.db",
         SLUG_LEN=6,
-
-        RATE_LIMIT_MAX=10,          
-        RATE_LIMIT_WINDOW=60,       
-        MAX_FORM_BYTES=4096,        
-        REDIRECT_CACHE=3600,      
+        REDIRECT_CACHE=3600,
+        RATE_LIMIT_MAX=10,
+        RATE_LIMIT_WINDOW=60,
+        MAX_FORM_BYTES=4096,
+        PAGE_SIZE=20, 
     )
 
     if config_overrides:

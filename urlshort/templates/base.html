@@ -32,5 +32,8 @@
   <footer class="container footer">
     <small>Build: Flask + sqlite3 · MVP</small>
   </footer>
+
+  <!-- JS externo para respeitar CSP (sem inline) -->
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

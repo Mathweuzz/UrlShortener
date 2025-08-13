@@ -31,7 +31,11 @@
       <tbody>
         {% for r in links %}
           <tr>
-            <td><a href="{{ base_url.rstrip('/') }}/{{ r['slug'] }}" target="_blank" rel="noopener">{{ base_url.rstrip('/') }}/{{ r['slug'] }}</a></td>
+            <td>
+              <a href="{{ base_url.rstrip('/') }}/{{ r['slug'] }}" target="_blank" rel="noopener">{{ base_url.rstrip('/') }}/{{ r['slug'] }}</a>
+              <button class="btn btn-sm copy-btn" type="button"
+                      data-copy="{{ base_url.rstrip('/') }}/{{ r['slug'] }}">Copiar</button>
+            </td>
             <td style="word-break:break-all;"><a href="{{ r['target_url'] }}" target="_blank" rel="noopener">{{ r['target_url'] }}</a></td>
             <td>{{ "301" if r["is_permanent"] else "302" }}</td>
             <td>{{ r["created_at"] }}</td>
