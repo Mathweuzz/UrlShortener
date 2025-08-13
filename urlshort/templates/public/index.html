@@ -4,6 +4,7 @@
   <h2>Encurtar URL</h2>
 
   <form method="post" action="{{ url_for('public.index') }}" class="card">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
     <label for="target_url"><strong>URL de destino</strong></label>
     <input id="target_url" name="target_url" type="url" required placeholder="https://exemplo.com/pagina" maxlength="2048" style="width:100%;padding:8px;margin:6px 0;">
 
