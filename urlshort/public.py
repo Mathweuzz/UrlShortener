@@ -4,8 +4,7 @@ bp = Blueprint("public", __name__)
 
 @bp.get("/")
 def index():
-    # página inical pública
-    render_template(
+    return render_template(
         "public/index.html",
-        base_url=current_app.config.get("BASE_URL", "https://localhost:5000"),
+        base_url=current_app.config.get("BASE_URL", "http://localhost:5000"),
     )
